@@ -1,6 +1,6 @@
 
 
-An overview of boosting tree algorithms, their main differences, performance comparisons, and hyperparameter optimization. In this notebook, we will delve deeper into boosted trees, specifically comparing XGBoost, CatBoost, and LightGBM. We will explore their main differences, parameters in each algorithm, compare their performance on different datasets, assess their CPU and GPU usage, conduct Optuna optimization, and examine SHAP values.
+An overview of boosting tree algorithms, their main differences, performance comparisons, and hyperparameter optimization. In this notebook, we will delve deeper into boosted trees, specifically comparing XGBoost, CatBoost, and LightGBM. We will explore the main differences, and parameters in each algorithm, compare their performance on different datasets, assess their CPU and GPU usage, conduct Optuna optimization, and examine SHAP values.
 
 - [This Notebook repository](https://github.com/joaomh/xgboost-catboost-lgbm)
 - [Undergraduate GitHub repository](https://github.com/joaomh/study_boosting_optuna_USP_undergraduate_thesis)
@@ -34,7 +34,7 @@ An overview of boosting tree algorithms, their main differences, performance com
 
 # Introduction
 
-The purpose of this post is to introduce the fundamentals of boosting algorithms and the main difference between XGBoost, CatBoost and LightGBM. We will give the reader some necessary keys to well understand and use related methods and be able to design adapted solutions when needed.
+The purpose of this post is to introduce the fundamentals of boosting algorithms and the main difference between XGBoost, CatBoost, and LightGBM. We will give the reader some necessary keys to well understand and use related methods and be able to design adapted solutions when needed.
 
 If we look at the [2022 Kaggle Data Science & ML Survey](https://www.kaggle.com/kaggle-survey-2022), we can see that Gradient Boosting Machines (GBMs) have been widely used in recent years. They are supervised machine learning algorithms that have consistently produced excellent results across a wide range of problems and have won numerous machine learning competitions.
 
@@ -46,17 +46,17 @@ They achieve this because boosting algorithms are very effective on tabular data
 # Ensemble 
 Many machine learning models primarily aim for high prediction accuracy using a single model, where boosting algorithms strive to enhance predictions by sequentially training a series of weak models, with each model compensating for the weaknesses of its predecessors.
 
-First of all we need to understand Ensemble Learning, it's based on the idea of combining several simpler prediction models (weak learner), training them for the same task, and producing from them a more complex grouped model (strong learner) that is the sum of its parts.
+First of all, we need to understand Ensemble Learning, it's based on the idea of combining several simpler prediction models (weak learner), training them for the same task, and producing from them a more complex grouped model (strong learner) that is the sum of its parts.
 
 For example, when creating an ensemble model based on several decision trees, which are simple yet high-variance models (often considered 'weak learners'), we need to aggregate them to enhance their resistance to data variations. Therefore, it makes sense to train the trees separately, allowing each one to adapt to different parts of the dataset. This way, each tree gains knowledge about various data variations, collectively improving the ensemble's predictive performance.
 
-There are various ensemble learning methods, but in this text, we will primarily focus on Boosting, which is used in GBMs, but we can mention three algorithms that aims at combining weak learners:
+There are various ensemble learning methods, but in this text, we will primarily focus on Boosting, which is used in GBMs, but we can mention three algorithms that aim at combining weak learners:
 
-**Bagging**: It is generally done with homogeneous predictors, each one operating independently in relation to the others, in a parallel manner. The final algorithm is then constructed by aggregating the results obtained from the base models in some form of average. Random Forest is one of the most famous algorithm.
+**Bagging**: It is generally done with homogeneous predictors, each one operating independently in relation to the others, in a parallel manner. The final algorithm is then constructed by aggregating the results obtained from the base models in some form of average. Random Forest is one of the most famous algorithms.
 
 **Boosting**: Generally implemented with homogeneous predictors, applied sequentially where the posterior model depends on the predecessor, and then these models are combined in the final ensemble. GBMs work like this
 
-**Stacking**: It is typically done with heterogeneous predictors, training them in parallel, and then combining their outputs by training a meta-model that generates predictions based on the predictions of the various weak models. Here we can for combine RandomForest with DecisionTree for example.
+**Stacking**: It is typically done with heterogeneous predictors, training them in parallel, and then combining their outputs by training a meta-model that generates predictions based on the predictions of the various weak models. Here we can combine RandomForest with DecisionTree for example.
 
 ![png1](https://github.com/joaomh/joaomh.github.io/blob/main/assets/post_img/2023-10-01-catboost-lgbm-xgboost/boosting_bagging.png?raw=true) [Image from Ensemble Learning: Bagging & Boosting](https://towardsdatascience.com/ensemble-learning-bagging-boosting-3098079e5422)
 
@@ -67,7 +67,7 @@ $$
 G(x) = sign\bigr[\sum^M_{m=1}\alpha_m\cdot G_m(x)\bigr]
 $$
 Here, the weights $\alpha_m$
-are computed by the boosting algorithm, and the idea is to increase the influence of weak learners that are more accurate while simultaneously penalizing those that are not.
+are computed by the boosting algorithm, and the idea is to increase the influence of weak learners who are more accurate while simultaneously penalizing those who are not.
 The weakness is identified by the weak estimator error rate
 $$err_m = \frac{\sum_{i=1}^Nw_i\mathbf{I}(y_i\neq G_m(x_i))}{\sum_{i=1}^Nw_i}$$
 
@@ -89,7 +89,7 @@ From [1][2]
 
 ![png](https://github.com/joaomh/joaomh.github.io/blob/main/assets/post_img/2023-10-01-catboost-lgbm-xgboost/ada.png?raw=true) [Marsh, Brendan (2016). Multivariate Analysis of the Vector Boson Fusion Higgs Boson](https://www.researchgate.net/publication/306054843_Multivariate_Analysis_of_the_Vector_Boson_Fusion_Higgs_Boson)
 
-Scikit-Learn have a implementation of AdaBoost
+Scikit-Learn have an implementation of AdaBoost
 
 
 ```python
@@ -147,19 +147,19 @@ clf.score(X, y)
 # GBMs
 The Gradient Boosting Machines algorithm works by optimizing any given differentiable loss function, using gradient descent [3].
 
-We can write de GBM model as 
+We can write the GBM model as 
 
 $$F_M(x) = F_0(x) + \sum_{m=1}^MF_m(x)$$
 
-$ \beta_mh(x; a_m)$ are the base functions learners, where $\beta_m$ is the weight, and $a_m$ the parameters of the learner $h$. And we have a loss function $L(y_i,F_m(x_i))$, so we would like to find all optimal values of this parameters that would minimize this loss funciton.
+$ \beta_mh(x; a_m)$ are the base functions learners, where $\beta_m$ is the weight, and $a_m$ the parameters of the learner $h$. We have a loss function $L(y_i,F_m(x_i))$, so we would like to find all optimal values of these parameters that would minimize this loss function.
 
 $$\{\beta_m,\alpha_m\}_1^M = {\arg\min}_{\{\beta'_m,\alpha'_m\}_1^M}\sum_{i=1}^n L\Biggl(y^{(i)},\sum_{m=1}^M\beta'_mh(\mathbf{x}^{(i)};\alpha'_m)\Biggl)$$
 
-In this situations where is infeasible we can try a 'greedy-stagewise' approach for $m=1,2,3,...,M$
+In these situations where is infeasible we can try a 'greedy-stagewise' approach for $m=1,2,3,...,M$
 
 $$(\beta_m,\alpha_m) = {\arg\min}_{\beta,\alpha}\sum_{i=1}^n L\Biggl(y^{(i)},F_{m-1}\mathbf{x}^{(i)} + \beta h(\mathbf{x}^{(i)};\alpha)\Biggl)$$
 
-And then we can use a vectorized notation and make similar to the gradient descent formula. The learning rate, $\eta$ shrinks the influence of the new learner.
+Then we can use a vectorized notation and make it similar to the gradient descent formula. The learning rate, $\eta$ shrinks the influence of the new learner.
 
 $$F_m(\mathbf{X}) = F_{m-1}(\mathbf{X}) + \eta \Delta_m(X)$$
 
@@ -169,7 +169,7 @@ The gradient of the loss function $L$ with relation to the last estimate $F_{m�
 $$-g_m(\mathbf{x}^{(i)}) = -\Bigg[\frac{\partial L(y^{(i)},c^{(i)})}{\partial F(\mathbf{x}^{(i)})}\Bigg]$$
 
 
-Gradient of the loss function $L$ with respect to the last prediction is sometimes called pseudo-residual, and written as $r_{m−1}$ can be written as
+The gradient of the loss function $L$ with respect to the last prediction is sometimes called pseudo-residual, and written as $r_{m−1}$ can be written as
 $$\mathbf{r}_{m_1} = \nabla F_{m-1}(\mathbf{X})L(y,F_{m-1}(\mathbf{X})) = \nabla \hat{y}_{m-1}L(y,\hat{y}_{\mathbf{m-1}})$$
 
 
@@ -205,7 +205,7 @@ $F_m(\mathbf{X}) = F_{m-1}(\mathbf{X}) + \eta \Delta_m(X)$
 
 
 
-We also can find Gradient Boosting function in scikit-learn
+We also can find the Gradient Boosting function in scikit-learn
 
 
 ```python
@@ -286,7 +286,7 @@ In XGBoost, the pre-sorted algorithm considers all features and sorts them by va
 
 CatBoost uses a greedy method where a list of possible candidates for feature splits is assigned to the leaf, and the split that results in the smallest penalty is selected.
 
-In LightGBM, Gradient-based One-Side Sampling (GOSS) retains all the data with large gradients and performs random sampling for data instances with small gradients (small traning error). This results in fewer data instances used to train the model.
+In LightGBM, Gradient-based one-sided sampling (GOSS) retains all the data with large gradients and performs random sampling for data instances with small gradients (small training error). This results in fewer data instances used to train the model.
 
 # Prevent Overfitting
 
@@ -302,16 +302,16 @@ All of the tree models come equipped with excellent parameters designed to mitig
 
 **depth or max_depth:** This parameter limits the maximum depth of the tree model. It is employed to combat overfitting when dealing with small datasets.
 
-**num_leaves or max_leaves:** The maximum number of leafs in the resulting tree
+**num_leaves or max_leaves:** The maximum number of leaves in the resulting tree
 
 **random_strength:** This parameter determines the amount of randomness applied when scoring splits during the selection of the tree structure. You can adjust this parameter to mitigate the risk of overfitting in your model.
 
 # Hyperparameter Tuning
-As you can see all three libraries offer a variety of hyperparameters to tune, and their effectiveness can vary depending on the dataset. We will use Optuna in ours tests
+As you can see all three libraries offer a variety of hyperparameters to tune, and their effectiveness can vary depending on the dataset. We will use Optuna in our tests
 
-# Models Performance CPU vs GPU
+# Models Performance CPU vs. GPU
 
-In this section, we are going to use three different datasets: epsilon, higgs, and breast cancer. However, we will not delve deeply into the typical steps of a data science project, such as EDA (Exploratory Data Analysis), pre-processing, handling missing values, plotting some variables, and analyzing correlations. Our primary focus will be the performance of out-of-the-box models, as they are designed to handle certain aspects by default, such as missing values.
+In this section, we are going to use three different datasets: epsilon, Higgs, and breast cancer. However, we will not delve deeply into the typical steps of a data science project, such as EDA (Exploratory Data Analysis), pre-processing, handling missing values, plotting some variables, and analyzing correlations. Our primary focus will be the performance of out-of-the-box models, as they are designed to handle certain aspects by default, such as missing values.
 
 ## Epsilon
 [Epsilon dataset](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary.html#epsilon).
@@ -319,7 +319,7 @@ This dataset is best suited for binary classification.
 
 The training dataset contains 400000 objects. Each object is described by 2001 columns. The first column contains the label value, all other columns contain numerical features.
 
-The validation dataset contains 100000 objects. The structure is identical to the training dataset.
+The validation dataset contains 100,000 objects. The structure is identical to the training dataset.
 
 
 
@@ -459,7 +459,7 @@ results_auc_gpu
 ## Higgs
 
 [Higgs](https://archive.ics.uci.edu/dataset/280/higgs)
-This is a classification problem to distinguish between a signal process which produces Higgs bosons and a background process which does not. 
+This is a classification problem to distinguish between a signal process that produces Higgs bosons and a background process that does not. 
 
 The training dataset contains 10500000 objects. Each object is described by 29 columns. The first column contains the label value, all other columns contain numerical features.
 
@@ -591,7 +591,7 @@ results_auc_gpu
 
 The breast cancer dataset is a classic and very easy binary classification dataset.
 
-Features are computed from a digitized image of a fine needle aspirate (FNA) of a breast mass.  They describe characteristics of the cell nuclei present in the image
+Features are computed from a digitized image of a fine needle aspirate (FNA) of a breast mass.  They describe the characteristics of the cell nuclei present in the image
 
 
 ```python
@@ -703,7 +703,7 @@ results_auc_gpu
 
 # Optuna
 
-Now, let's attempt to utilize Optuna with the three algorithms, applying it to our largest dataset. We will employ early_stopping to determine the optimal number of iterations that minimizes the validation loss, and we'll also consider class weights using the 'balanced' option.
+Now, let's attempt to utilize Optuna with the three algorithms, applying it to our largest dataset. We will employ early_stopping to determine the optimal number of iterations that minimize the validation loss, and we'll also consider class weights using the 'balanced' option.
 
 Another valuable aspect to explore is the use of sample weights, which can be passed as an array of shape n_samples. This feature proves exceptionally useful in applications such as churn modeling, where we aim to prevent the churn of high-value customers with greater profitability.
 
