@@ -151,13 +151,13 @@ We can write the GBM model as
 
 $$F_M(x) = F_0(x) + \sum_{m=1}^MF_m(x)$$
 
-$ \beta_mh(x; a_m)$ are the base functions learners, where $\beta_m$ is the weight, and $a_m$ the parameters of the learner $h$. We have a loss function $L(y_i,F_m(x_i))$, so we would like to find all optimal values of these parameters that would minimize this loss function.
+$\beta_{m}h(x; a_m)$ are the base functions learners, where $\beta_m$ is the weight, and $a_m$ the parameters of the learner $h$. We have a loss function $L(y_i,F_m(x_i))$, so we would like to find all optimal values of these parameters that would minimize this loss function.
 
 $$\{\beta_m,\alpha_m\}_1^M = {\arg\min}_{\{\beta'_m,\alpha'_m\}_1^M}\sum_{i=1}^n L\Biggl(y^{(i)},\sum_{m=1}^M\beta'_mh(\mathbf{x}^{(i)};\alpha'_m)\Biggl)$$
 
 In these situations where is infeasible we can try a 'greedy-stagewise' approach for $m=1,2,3,...,M$
 
-$$(\beta_m,\alpha_m) = {\arg\min}_{\beta,\alpha}\sum_{i=1}^n L\Biggl(y^{(i)},F_{m-1}\mathbf{x}^{(i)} + \beta h(\mathbf{x}^{(i)};\alpha)\Biggl)$$
+$$(\beta_m,\alpha_m) = \arg\min_{\beta,\alpha}\sum_{i=1}^n L\Biggl(y^{(i)},F_{m-1}\mathbf{x}^{(i)} + \beta h(\mathbf{x}^{(i)};\alpha)\Biggl)$$
 
 Then we can use a vectorized notation and make it similar to the gradient descent formula. The learning rate, $\eta$ shrinks the influence of the new learner.
 
@@ -170,17 +170,17 @@ $$-g_m(\mathbf{x}^{(i)}) = -\Bigg[\frac{\partial L(y^{(i)},c^{(i)})}{\partial F(
 
 
 The gradient of the loss function $L$ with respect to the last prediction is sometimes called pseudo-residual, and written as $r_{m−1}$ can be written as
-$$\mathbf{r}_{m_1} = \nabla F_{m-1}(\mathbf{X})L(y,F_{m-1}(\mathbf{X})) = \nabla \hat{y}_{m-1}L(y,\hat{y}_{\mathbf{m-1}})$$
 
+$$\mathbf r_{m_1} = \nabla F_{m-1}(\mathbf{X})L(y,F_{m-1}(\mathbf{X})) = \nabla \hat y_{m-1}L(y,\hat{y}_{\mathbf{m-1}})$$
 
 1. $F_0(\mathbf{X}) = \arg\min_v\sum_{i=1}^n L(y^{(i)},v)$
 2. For $m=1$ to $M$:
 
-    2.1. $\mathbf{r}_{m_1} = \nabla \hat{y}_{m-1}L(y,\hat{y}_{\mathbf{m-1}})$
+    2.1. $\mathbf r_{m_1} = \nabla \hat y_{m-1}L(y,\hat{y}_{\mathbf{m-1}})$
 
-    2.2. $\alpha = {\arg\min}_{\alpha,\beta}\sum_{i=1}^n(\mathbf{r}_{m-1}^{(i)}-\beta h(\mathbf{x}^{(i)};\alpha))^2$
+    2.2. $\alpha = \arg\min_{\alpha,\beta}\sum_{i=1}^n(\mathbf{r}_{m-1}^{(i)}-\beta h(\mathbf{x}^{(i)};\alpha))^2$
 
-    2.3. $\beta = {\arg\min}_{\beta}\sum_{i=1}^nL(y^{(i)},F_{m-1}(\mathbf{x}^{(i))}+\beta h(\mathbf{x}^{(i))};\alpha_m)$
+    2.3. $\beta = \arg\min_{\beta}\sum_{i=1}^nL(y^{(i)},F_{m-1}(\mathbf{x}^{(i))}+\beta h(\mathbf{x}^{(i))};\alpha_m)$
 
     2.4. $\Delta_m(X) = \beta_mh(\mathbf{X};\alpha_m)$
     
